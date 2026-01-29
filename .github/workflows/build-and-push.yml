@@ -1,0 +1,44 @@
+name: Build and Push Node Service
+on:
+  push:
+    branches: [ master ]
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: anime-node-js-rest-api
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Lowercase image name
+        id: string
+        run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ steps.string.outputs.owner }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ steps.string.outputs.owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+      - name: Trigger Deploy
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.INFRA_REPO_PAT }}
+          repository: ${{ github.repository_owner }}/anime-k8s-infrastructure
+          event-type: deploy
+          client-payload: '{"services": "episode-api", "tag": "${{ github.sha }}", "source_repo": "${{ github.repository }}"}'
