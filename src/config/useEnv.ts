@@ -14,7 +14,7 @@ export const useEnv = (): Env => {
   const portNumber = Number(EXPRESS_PORT);
 
   if (!EXPRESS_PORT || Number.isNaN(portNumber)) {
-    throw new Error(`${ERROR_MESSAGE} PORT`);
+    throw new Error(`${ERROR_MESSAGE} EXPRESS_PORT`);
   }
 
   if (!EXPRESS_HOST) {
