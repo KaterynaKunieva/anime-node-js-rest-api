@@ -1,7 +1,7 @@
-name: Build and Push Node Service
+name: Build and Push Node API (Episodes)
 on:
   push:
-    branches: [ master ]
+    branches: [main, master]
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: anime-node-js-rest-api
